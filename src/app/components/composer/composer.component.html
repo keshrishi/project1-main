@@ -1,8 +1,8 @@
-<div class="modal-overlay" (click)="close.emit()">
+<div class="modal-overlay" (click)="goBack()">
     <div class="modal-content composer" (click)="$event.stopPropagation()">
         <div class="modal-header">
             <h2>{{ memeToEdit ? 'Edit Meme' : 'New Meme' }}</h2>
-            <button class="btn-icon" (click)="close.emit()">✕</button>
+            <button class="btn-icon" (click)="goBack()">✕</button>
         </div>
 
         <div class="form-group">

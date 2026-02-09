@@ -1,7 +1,9 @@
 export interface User {
-  id: string;
+  id: string | number;
   username: string;
-  avatarUrl?: string; // Optional, can use placeholders or initials
+  email: string;
+  role: 'user' | 'admin';
+  avatarUrl?: string;
 }
 
 export interface Comment {
@@ -21,12 +23,13 @@ export interface Meme {
   tags: string[];
   mood: string; // e.g., 'Funny', 'Sarcastic', 'Sad', etc.
   team: string; // e.g., 'Engineering', 'HR', etc.
-  flags: Flag[];
-  comments: Comment[];
+  flags?: Flag[];
+  comments?: Comment[];
+  deleted?: boolean;
 }
 
 export interface Flag {
-  userId: string;
+  userId: string | number;
   reason: string;
   timestamp: number;
 }

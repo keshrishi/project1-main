@@ -1,9 +1,6 @@
 <div class="feed-container">
   <!-- Header -->
-  <header class="app-header">
-    <h1>MemeBazaar<span class="brand-dot">.</span></h1>
-    <app-shared-button variant="primary" (action)="openComposer()">+ New Post</app-shared-button>
-  </header>
+
 
   <!-- Filters & Search -->
   <div class="filters-bar">
@@ -64,10 +61,6 @@
     </div>
   </div>
 
-  <!-- Modals -->
-  <app-post-detail *ngIf="selectedMeme" [meme]="selectedMeme" (close)="closeMeme()"
-    (edit)="openComposer($event)"></app-post-detail>
-
-  <app-composer *ngIf="isComposerOpen" [memeToEdit]="editingMeme" (close)="closeComposer()"></app-composer>
+  <!-- Modals removed, using Routing now -->
 
 </div>

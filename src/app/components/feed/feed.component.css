@@ -2,43 +2,7 @@
   max-width: 1000px;
   margin: 0 auto;
   padding: 20px;
-  padding-top: 80px;
-  /* Space for fixed header */
   min-height: 100vh;
-}
-
-/* Glassmorphism Header */
-.app-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 70px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 2rem;
-  background: rgba(15, 23, 42, 0.85);
-  /* Semi-transparent background */
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border-color);
-  z-index: 100;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.app-header h1 {
-  font-size: 1.6rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin: 0;
-  letter-spacing: -0.025em;
-}
-
-.app-header span {
-  color: red;
 }
 
 

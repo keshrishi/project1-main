@@ -1,10 +1,11 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SharedButtonComponent } from '@shared/ui/button/button.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MemeService } from '../../services/meme.service';
 import { Draft, Meme } from '../../models/meme.model';
 import { debounceTime, Subject } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-composer',
@@ -14,8 +15,7 @@ import { debounceTime, Subject } from 'rxjs';
   styleUrls: ['./composer.component.css']
 })
 export class ComposerComponent implements OnInit {
-  @Input() memeToEdit: Meme | null = null;
-  @Output() close = new EventEmitter<void>();
+  memeToEdit: Meme | null = null;
 
   title = '';
   content = '';
@@ -27,8 +27,13 @@ export class ComposerComponent implements OnInit {
   teams = ['Engineering', 'Product', 'Design', 'QA', 'HR', 'Sales', 'Marketing'];
 
   private draftSubject = new Subject<void>();
+  isPublished = false;
 
-  constructor(private memeService: MemeService) {
+  constructor(
+    private memeService: MemeService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
     // Auto-save draft debounce
     this.draftSubject.pipe(debounceTime(1000)).subscribe(() => {
       this.saveDraft();
@@ -36,11 +41,20 @@ export class ComposerComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.memeToEdit) {
-      this.loadDraftOrMeme();
-    } else {
-      this.loadDraft();
-    }
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.memeService.getMeme(id).subscribe({
+          next: (meme) => {
+            this.memeToEdit = meme;
+            this.loadDraftOrMeme();
+          },
+          error: () => this.router.navigate(['/feed'])
+        });
+      } else {
+        this.loadDraft();
+      }
+    });
   }
 
   loadDraftOrMeme() {
@@ -91,10 +105,20 @@ export class ComposerComponent implements OnInit {
     this.memeService.saveDraft(draft);
   }
 
+  canDeactivate(): boolean {
+    if ((this.title || this.content) && !this.isPublished) {
+      return confirm('You have unsaved changes. Do you really want to leave?');
+    }
+    return true;
+  }
+
   publish() {
     if (!this.content.trim()) return;
 
     const tags = this.tagsInput.split(',').map(t => t.trim()).filter(t => t);
+
+    // Mark as published
+    this.isPublished = true;
 
     if (this.memeToEdit) {
       // Update
@@ -110,28 +134,29 @@ export class ComposerComponent implements OnInit {
       this.memeService.clearDraft(this.memeToEdit.id);
     } else {
       // Create
-      // Subscribe needs to be handled carefully. Usually avoiding inside method is better, 
-      // but for this simple app it's okay. BETTER: user take(1).
-      this.memeService.currentUser$.subscribe(user => {
-        if (user) {
-          const newMeme: Meme = {
-            id: Date.now().toString(),
-            title: this.title,
-            content: this.content,
-            mood: this.mood || 'Funny',
-            team: this.team || 'Engineering',
-            tags: tags,
-            author: user,
-            timestamp: Date.now(),
-            likes: [],
-            flags: [],
-            comments: []
-          };
-          this.memeService.addMeme(newMeme);
-          this.memeService.clearDraft();
-        }
-      }).unsubscribe(); // Close subscription immediately
+      const user = this.memeService.currentUserValue;
+      if (user) {
+        const newMeme: Meme = {
+          id: Date.now().toString(),
+          title: this.title,
+          content: this.content,
+          mood: this.mood || 'Funny',
+          team: this.team || 'Engineering',
+          tags: tags,
+          author: user,
+          timestamp: Date.now(),
+          likes: [],
+          flags: [],
+          comments: []
+        };
+        this.memeService.addMeme(newMeme);
+        this.memeService.clearDraft();
+      }
     }
-    this.close.emit();
+    this.router.navigate(['/feed']);
+  }
+
+  goBack() {
+    this.router.navigate(['/feed']);
   }
 }

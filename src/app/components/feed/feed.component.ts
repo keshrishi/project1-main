@@ -2,30 +2,20 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MemeService } from '../../services/meme.service';
-import { Meme, UserPreferences } from '../../models/meme.model';
+import { Meme } from '../../models/meme.model';
 import { BehaviorSubject, combineLatest, map } from 'rxjs';
-import { PostDetailComponent } from '../post-detail/post-detail.component';
-import { ComposerComponent } from '../composer/composer.component';
 import { SharedButtonComponent } from '@shared/ui/button/button.component';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-feed',
   standalone: true,
-  imports: [CommonModule, FormsModule, PostDetailComponent, ComposerComponent, SharedButtonComponent],
+  imports: [CommonModule, FormsModule, SharedButtonComponent],
   templateUrl: './feed.component.html',
   styleUrls: ['./feed.component.css']
 })
 export class FeedComponent implements OnInit {
-
-  // Data Sources
-  private searchTerm$ = new BehaviorSubject<string>('');
-  private filterMood$ = new BehaviorSubject<string>('');
-  private filterTeam$ = new BehaviorSubject<string>('');
-  private filterSaved$ = new BehaviorSubject<boolean>(false);
-  private filterLiked$ = new BehaviorSubject<boolean>(false);
-  private sortOrder$ = new BehaviorSubject<'newest' | 'oldest'>('newest');
-
-  // UI State
+  // Filters
   searchTerm = '';
   filterMood = '';
   filterTeam = '';
@@ -33,33 +23,31 @@ export class FeedComponent implements OnInit {
   filterLiked = false;
   sortOrder: 'newest' | 'oldest' = 'newest';
 
-  teams = ['Engineering', 'Product', 'Design', 'QA', 'HR', 'Sales', 'Marketing'];
+  // State Subjects for Reactivity
+  private searchTerm$ = new BehaviorSubject<string>('');
+  private filterMood$ = new BehaviorSubject<string>('');
+  private filterTeam$ = new BehaviorSubject<string>('');
+  private filterSaved$ = new BehaviorSubject<boolean>(false);
+  private filterLiked$ = new BehaviorSubject<boolean>(false);
+  private sortOrder$ = new BehaviorSubject<'newest' | 'oldest'>('newest');
 
-  selectedMeme: Meme | null = null;
-  isComposerOpen = false;
-  editingMeme: Meme | null = null;
-
+  // Derived Stream
   displayedMemes$ = combineLatest([
     this.memeService.memes$,
-    this.memeService.preferences$,
     this.searchTerm$,
     this.filterMood$,
     this.filterTeam$,
     this.filterSaved$,
     this.filterLiked$,
-    this.sortOrder$
+    this.sortOrder$,
+    this.memeService.preferences$
   ]).pipe(
-    map(([memes, prefs, search, mood, team, savedOnly, likedOnly, sort]) => {
+    map(([memes, term, mood, team, saved, liked, sort, prefs]) => {
       let filtered = memes;
 
-      // Filter by Saved
-      if (savedOnly) {
-        filtered = filtered.filter(m => prefs.savedPosts.includes(m.id));
-      }
-
-      // Filter by Liked
-      if (likedOnly) {
-        filtered = filtered.filter(m => prefs.likedPosts.includes(m.id));
+      // Filter by Team
+      if (team) {
+        filtered = filtered.filter(m => m.team === team);
       }
 
       // Filter by Mood
@@ -67,101 +55,126 @@ export class FeedComponent implements OnInit {
         filtered = filtered.filter(m => m.mood === mood);
       }
 
-      // Filter by Team
-      if (team) {
-        filtered = filtered.filter(m => m.team === team);
+      // Filter by Search (Title + Content)
+      if (term) {
+        const lowerTerm = term.toLowerCase();
+        filtered = filtered.filter(m =>
+          (m.title && m.title.toLowerCase().includes(lowerTerm)) ||
+          m.content.toLowerCase().includes(lowerTerm)
+        );
       }
 
-      // Filter by Search (Title + Body)
-      if (search) {
-        const lowerSearch = search.toLowerCase();
-        filtered = filtered.filter(m =>
-          (m.title && m.title.toLowerCase().includes(lowerSearch)) ||
-          m.content.toLowerCase().includes(lowerSearch)
-        );
+      // Filter by Saved
+      if (saved) {
+        filtered = filtered.filter(m => prefs.savedPosts.includes(m.id));
+      }
+
+      // Filter by Liked
+      if (liked) {
+        filtered = filtered.filter(m => prefs.likedPosts.includes(m.id));
       }
 
       // Sort
       return filtered.sort((a, b) => {
-        return sort === 'newest'
-          ? b.timestamp - a.timestamp
-          : a.timestamp - b.timestamp;
+        return sort === 'newest' ? b.timestamp - a.timestamp : a.timestamp - b.timestamp;
       });
     })
   );
 
-  constructor(public memeService: MemeService) { }
+  constructor(
+    public memeService: MemeService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) { }
 
   ngOnInit(): void {
-    this.memeService.memes$.subscribe(memes => {
-      if (this.selectedMeme) {
-        const updated = memes.find(m => m.id === this.selectedMeme!.id);
-        if (updated) {
-          this.selectedMeme = updated;
-        }
-      }
+    // Sync URL params to State
+    this.route.queryParams.subscribe(params => {
+      this.searchTerm = params['q'] || '';
+      this.filterMood = params['mood'] || '';
+      this.filterTeam = params['team'] || '';
+      this.filterSaved = params['saved'] === 'true';
+      this.filterLiked = params['liked'] === 'true';
+      this.sortOrder = params['sort'] || 'newest';
+
+      // Update subjects to trigger pipe
+      this.searchTerm$.next(this.searchTerm);
+      this.filterMood$.next(this.filterMood);
+      this.filterTeam$.next(this.filterTeam);
+      this.filterSaved$.next(this.filterSaved);
+      this.filterLiked$.next(this.filterLiked);
+      this.sortOrder$.next(this.sortOrder);
+    });
+
+    // Refresh memes on load
+    this.memeService.loadMemes();
+  }
+
+  updateParams() {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        q: this.searchTerm || null,
+        mood: this.filterMood || null,
+        team: this.filterTeam || null,
+        saved: this.filterSaved || null,
+        liked: this.filterLiked || null,
+        sort: this.sortOrder
+      },
+      queryParamsHandling: 'merge'
     });
   }
 
   onSearch(term: string) {
-    this.searchTerm$.next(term);
+    this.searchTerm = term;
+    this.updateParams();
   }
 
   onFilterMood(mood: string) {
-    this.filterMood$.next(mood);
+    this.filterMood = mood;
+    this.updateParams();
   }
 
   onFilterTeam(team: string) {
-    this.filterTeam$.next(team);
+    this.filterTeam = team;
+    this.updateParams();
   }
 
   toggleSavedFilter() {
-    if (this.filterLiked) {
+    if (this.filterLiked && !this.filterSaved) {
       this.filterLiked = false;
-      this.filterLiked$.next(false);
     }
     this.filterSaved = !this.filterSaved;
-    this.filterSaved$.next(this.filterSaved);
+    this.updateParams();
   }
 
   toggleLikedFilter() {
-    if (this.filterSaved) {
+    if (this.filterSaved && !this.filterLiked) {
       this.filterSaved = false;
-      this.filterSaved$.next(false);
     }
     this.filterLiked = !this.filterLiked;
-    this.filterLiked$.next(this.filterLiked);
+    this.updateParams();
   }
 
   onSortChange(order: 'newest' | 'oldest') {
     this.sortOrder = order;
-    this.sortOrder$.next(order);
+    this.updateParams();
   }
 
   openMeme(meme: Meme) {
-    this.selectedMeme = meme;
-  }
-
-  closeMeme() {
-    this.selectedMeme = null;
+    this.router.navigate(['/post', meme.id]);
   }
 
   openComposer(memeToEdit?: Meme) {
-    this.editingMeme = memeToEdit || null;
-    this.isComposerOpen = true;
-  }
-
-  closeComposer() {
-    this.isComposerOpen = false;
-    this.editingMeme = null;
-  }
-
-  getPreviewContent(content: string): string {
-    const masked = content.replace(/\|\|.*?\|\|/g, '[SPOILER]');
-    if (masked.length > 100) {
-      return masked.substring(0, 100) + '...';
+    if (memeToEdit) {
+      this.router.navigate(['/edit', memeToEdit.id]);
+    } else {
+      this.router.navigate(['/compose']);
     }
-    return masked;
+  }
+
+  get teams(): string[] {
+    return ['Engineering', 'Product', 'Design', 'QA', 'HR', 'Sales', 'Marketing'];
   }
 
   getRelativeTime(timestamp: number): string {
@@ -176,5 +189,9 @@ export class FeedComponent implements OnInit {
     if (hours > 0) return `${hours}h ago`;
     if (minutes > 0) return `${minutes}m ago`;
     return 'Just now';
+  }
+
+  getPreviewContent(content: string): string {
+    return content.length > 150 ? content.substring(0, 150) + '...' : content;
   }
 }

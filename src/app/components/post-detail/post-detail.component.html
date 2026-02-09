@@ -1,19 +1,24 @@
-<div class="modal-overlay" (click)="close.emit()">
-    <div class="modal-content redesign" (click)="$event.stopPropagation()">
+<div class="modal-overlay" (click)="goBack()">
+    <div class="modal-content redesign" (click)="$event.stopPropagation()" *ngIf="meme; else loading">
 
         <!-- Header: Sticky Top -->
         <div class="pd-header">
-            <button class="btn-icon close-btn" (click)="close.emit()">
+            <button class="btn-icon close-btn" (click)="goBack()">
                 <span class="icon">✕</span>
             </button>
             <div class="header-actions">
-                <button *ngIf="meme.author.id.startsWith('u')" class="btn-icon" title="Edit" (click)="onEdit()">
-                    <span class="icon">✏️</span>
-                </button>
-                <button *ngIf="meme.author.id.startsWith('u')" class="btn-icon danger" title="Delete"
-                    (click)="onDelete()">
-                    <span class="icon">🗑️</span>
-                </button>
+                <!-- Check if currentUser matches author -->
+                <ng-container *ngIf="(memeService.currentUser$ | async) as currentUser">
+                    <button *ngIf="currentUser.id === meme.author.id || currentUser.role === 'admin'" class="btn-icon"
+                        title="Edit" (click)="onEdit()">
+                        <span class="icon">✏️</span>
+                    </button>
+                    <button *ngIf="currentUser.id === meme.author.id || currentUser.role === 'admin'"
+                        class="btn-icon danger" title="Delete" (click)="onDelete()">
+                        <span class="icon">🗑️</span>
+                    </button>
+                </ng-container>
+
                 <button class="btn-icon warning" title="Report" (click)="openFlagModal()">
                     <span class="icon">🚩</span>
                 </button>
@@ -61,7 +66,7 @@
         <!-- Footer: Sticky Bottom Actions -->
         <div class="pd-footer">
             <button class="btn-big-action like-btn"
-                [class.active]="(memeService.currentUser$ | async)?.id && meme.likes.includes((memeService.currentUser$ | async)!.id)"
+                [class.active]="(memeService.currentUser$ | async)?.id && meme.likes.includes(((memeService.currentUser$ | async)!.id) + '')"
                 (click)="onLike()">
                 <div class="action-content">
                     <span class="emoji">❤️</span>
@@ -98,4 +103,7 @@
         </div>
 
     </div>
+    <ng-template #loading>
+        <div class="loading-spinner">Loading...</div>
+    </ng-template>
 </div>
