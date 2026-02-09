@@ -1,0 +1,212 @@
+.feed-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  padding-top: 80px;
+  /* Space for fixed header */
+  min-height: 100vh;
+}
+
+/* Glassmorphism Header */
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  background: rgba(15, 23, 42, 0.85);
+  /* Semi-transparent background */
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+  z-index: 100;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.app-header h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  letter-spacing: -0.025em;
+}
+
+.app-header span {
+  color: red;
+}
+
+
+
+/* Filters */
+.filters-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  background: var(--card-bg);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.search-input {
+  flex: 1;
+  min-width: 240px;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+}
+
+.filter-select,
+.sort-select {
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+}
+
+.btn-toggle {
+  background: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  padding: 0.75rem 1.2rem;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-toggle.active {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+/* Post List */
+.post-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.post-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.post-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--primary-color), var(--accent-color));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.post-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  border-color: var(--primary-hover);
+}
+
+.post-card:hover::before {
+  opacity: 1;
+}
+
+.post-card * {
+  cursor: pointer;
+  /* Ensure children inherit pointer */
+}
+
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.author {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.post-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text-color);
+}
+
+.post-preview {
+  color: var(--text-secondary);
+  margin-bottom: 1.25rem;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+.post-footer {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.tag {
+  background: rgba(99, 102, 241, 0.1);
+  /* Primary color low opacity */
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+.team-tag {
+  background: rgba(139, 92, 246, 0.1);
+  /* Accent color low opacity */
+  color: var(--accent-color);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.mood-badge {
+  margin-left: auto;
+  font-size: 0.75rem;
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+  color: white;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--border-color);
+}
+
+.brand-dot {
+  color: var(--danger-color);
+  -webkit-text-fill-color: initial;
+  background: none;
+}

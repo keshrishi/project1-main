@@ -1,0 +1,73 @@
+<div class="feed-container">
+  <!-- Header -->
+  <header class="app-header">
+    <h1>MemeBazaar<span class="brand-dot">.</span></h1>
+    <app-shared-button variant="primary" (action)="openComposer()">+ New Post</app-shared-button>
+  </header>
+
+  <!-- Filters & Search -->
+  <div class="filters-bar">
+    <input type="text" placeholder="Search memes..." [(ngModel)]="searchTerm" (ngModelChange)="onSearch($event)"
+      class="search-input">
+
+    <select [(ngModel)]="filterMood" (ngModelChange)="onFilterMood($event)" class="filter-select">
+      <option value="">All Moods</option>
+      <option value="Funny">Funny</option>
+      <option value="Sarcastic">Sarcastic</option>
+      <option value="Relatable">Relatable</option>
+      <option value="Risky">Risky</option>
+      <option value="Mysterious">Mysterious</option>
+    </select>
+
+    <select [(ngModel)]="filterTeam" (ngModelChange)="onFilterTeam($event)" class="filter-select">
+      <option value="">All Teams</option>
+      <option *ngFor="let t of teams" [value]="t">{{ t }}</option>
+    </select>
+
+    <button class="btn-toggle" [class.active]="filterSaved" (click)="toggleSavedFilter()">
+      {{ filterSaved ? 'Saved Only' : 'Saved' }}
+    </button>
+
+    <button class="btn-toggle" [class.active]="filterLiked" (click)="toggleLikedFilter()">
+      {{ filterLiked ? 'Liked Only' : 'Liked' }}
+    </button>
+
+    <select [(ngModel)]="sortOrder" (ngModelChange)="onSortChange($event)" class="sort-select">
+      <option value="newest">Newest First</option>
+      <option value="oldest">Oldest First</option>
+    </select>
+  </div>
+
+  <!-- Post List -->
+  <div class="post-list">
+    <div *ngFor="let meme of displayedMemes$ | async" class="post-card" (click)="openMeme(meme)">
+      <div class="post-header">
+        <span class="author">&#64;{{ meme.author.username }}</span>
+        <span class="timestamp">{{ getRelativeTime(meme.timestamp) }}</span>
+      </div>
+
+      <h3 *ngIf="meme.title" class="post-title">{{ meme.title }}</h3>
+
+      <div class="post-preview">
+        {{ getPreviewContent(meme.content) }}
+      </div>
+
+      <div class="post-footer">
+        <span class="tag" *ngFor="let tag of meme.tags">#{{ tag }}</span>
+        <span class="tag team-tag" *ngIf="meme.team">{{ meme.team }}</span>
+        <span class="mood-badge">{{ meme.mood }}</span>
+      </div>
+    </div>
+
+    <div *ngIf="(displayedMemes$ | async)?.length === 0" class="empty-state">
+      No memes found using these filters.
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <app-post-detail *ngIf="selectedMeme" [meme]="selectedMeme" (close)="closeMeme()"
+    (edit)="openComposer($event)"></app-post-detail>
+
+  <app-composer *ngIf="isComposerOpen" [memeToEdit]="editingMeme" (close)="closeComposer()"></app-composer>
+
+</div>

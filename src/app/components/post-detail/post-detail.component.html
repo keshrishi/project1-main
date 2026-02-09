@@ -1,0 +1,101 @@
+<div class="modal-overlay" (click)="close.emit()">
+    <div class="modal-content redesign" (click)="$event.stopPropagation()">
+
+        <!-- Header: Sticky Top -->
+        <div class="pd-header">
+            <button class="btn-icon close-btn" (click)="close.emit()">
+                <span class="icon">✕</span>
+            </button>
+            <div class="header-actions">
+                <button *ngIf="meme.author.id.startsWith('u')" class="btn-icon" title="Edit" (click)="onEdit()">
+                    <span class="icon">✏️</span>
+                </button>
+                <button *ngIf="meme.author.id.startsWith('u')" class="btn-icon danger" title="Delete"
+                    (click)="onDelete()">
+                    <span class="icon">🗑️</span>
+                </button>
+                <button class="btn-icon warning" title="Report" (click)="openFlagModal()">
+                    <span class="icon">🚩</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Body: Scrollable Content -->
+        <div class="pd-body">
+
+            <div class="author-section">
+                <div class="avatar-large">{{ meme.author.username.charAt(0) }}</div>
+                <div class="author-info">
+                    <span class="username">&#64;{{ meme.author.username }}</span>
+                    <span class="timestamp">{{ getRelativeTime(meme.timestamp) }}</span>
+                </div>
+                <span class="mood-pill" [attr.data-mood]="meme.mood">{{ meme.mood }}</span>
+            </div>
+
+            <h1 class="pd-title" *ngIf="meme.title">{{ meme.title }}</h1>
+
+            <div class="pd-content">
+                <div class="spoiler-control" *ngIf="meme.content.includes('||')">
+                    <button class="btn-text" (click)="expandAll()">Show All Spoilers</button>
+                </div>
+
+                <div class="text-block">
+                    <ng-container *ngFor="let part of parsedContent; let i = index">
+                        <span *ngIf="!part.isSpoiler">{{ part.text }}</span>
+                        <span *ngIf="part.isSpoiler" class="spoiler-text" [class.visible]="spoilerStates[i]"
+                            (click)="toggleSpoiler(i)">
+                            {{ spoilerStates[i] ? part.text : 'Click to Reveal' }}
+                        </span>
+                    </ng-container>
+                </div>
+            </div>
+
+            <div class="tags-section">
+                <span *ngFor="let tag of meme.tags" class="tag-pill">#{{ tag }}</span>
+                <span class="tag-pill team-pill" *ngIf="meme.team">{{ meme.team }}</span>
+            </div>
+
+
+        </div>
+
+        <!-- Footer: Sticky Bottom Actions -->
+        <div class="pd-footer">
+            <button class="btn-big-action like-btn"
+                [class.active]="(memeService.currentUser$ | async)?.id && meme.likes.includes((memeService.currentUser$ | async)!.id)"
+                (click)="onLike()">
+                <div class="action-content">
+                    <span class="emoji">❤️</span>
+                    <span class="label">Like</span>
+                    <span class="count">{{ meme.likes.length }}</span>
+                </div>
+            </button>
+            <button class="btn-big-action save-btn"
+                [class.active]="(memeService.preferences$ | async)?.savedPosts?.includes(meme.id)" (click)="onSave()">
+                <div class="action-content">
+                    <span class="emoji">🔖</span>
+                    <span class="label">{{ (memeService.preferences$ | async)?.savedPosts?.includes(meme.id) ? 'Saved' :
+                        'Save' }}</span>
+                </div>
+            </button>
+            <button class="btn-big-action share-btn" (click)="onShare()">
+                <div class="action-content">
+                    <span class="emoji">🔗</span>
+                    <span class="label">Share</span>
+                </div>
+            </button>
+        </div>
+
+        <!-- Flag Modal -->
+        <div class="flag-overlay" *ngIf="showFlagModal">
+            <div class="flag-box">
+                <h3>Report Post</h3>
+                <textarea [(ngModel)]="flagReason" placeholder="Reason for reporting..."></textarea>
+                <div class="flag-buttons">
+                    <button class="btn-cancel" (click)="closeFlagModal()">Cancel</button>
+                    <button class="btn-confirm" (click)="submitFlag()">Submit Report</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

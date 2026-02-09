@@ -1,0 +1,51 @@
+<div class="modal-overlay" (click)="close.emit()">
+    <div class="modal-content composer" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>{{ memeToEdit ? 'Edit Meme' : 'New Meme' }}</h2>
+            <button class="btn-icon" (click)="close.emit()">✕</button>
+        </div>
+
+        <div class="form-group">
+            <label>Title (Optional)</label>
+            <input type="text" [(ngModel)]="title" (ngModelChange)="onInputChange()" placeholder="Catchy title...">
+        </div>
+
+        <div class="form-group">
+            <label>Content *</label>
+            <textarea [(ngModel)]="content" (ngModelChange)="onInputChange()"
+                placeholder="Type your meme here... use ||spoiler|| for spoilers" rows="6"></textarea>
+            <small class="hint">Supports ASCII art and one-liners.</small>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Mood</label>
+                <select [(ngModel)]="mood" (ngModelChange)="onInputChange()">
+                    <option value="" disabled selected>Select Mood</option>
+                    <option *ngFor="let m of moods" [value]="m">{{ m }}</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Team</label>
+                <select [(ngModel)]="team" (ngModelChange)="onInputChange()">
+                    <option value="" disabled selected>Select Team</option>
+                    <option *ngFor="let t of teams" [value]="t">{{ t }}</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Tags</label>
+            <input type="text" [(ngModel)]="tagsInput" (ngModelChange)="onInputChange()"
+                placeholder="Comma separated tags...">
+        </div>
+
+        <div class="modal-footer">
+            <span class="draft-status">Draft saved locally</span>
+            <app-shared-button variant="primary" [disabled]="!content.trim()" (action)="publish()">
+                {{ memeToEdit ? 'Update' : 'Post' }}
+            </app-shared-button>
+        </div>
+    </div>
+</div>
