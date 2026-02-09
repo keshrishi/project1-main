@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MemeService } from '../../services/meme.service';
 import { Meme } from '../../models/meme.model';
-import { map } from 'rxjs';
+import { map, BehaviorSubject, combineLatest } from 'rxjs';
 import { Router } from '@angular/router';
 
 @Component({
@@ -29,6 +29,7 @@ import { Router } from '@angular/router';
           <div class="actions">
              <button *ngIf="!meme.deleted" (click)="softDelete(meme)" class="btn-danger">Soft Delete</button>
              <button *ngIf="meme.deleted" (click)="restore(meme)" class="btn-restore">Restore</button>
+             <button (click)="editMeme(meme)" class="btn-edit">Edit</button>
              <button (click)="viewMeme(meme)" class="btn-view">View</button>
           </div>
           
@@ -57,19 +58,21 @@ import { Router } from '@angular/router';
     button { padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; }
     .btn-danger { background: #e74c3c; color: white; }
     .btn-restore { background: #27ae60; color: white; }
+    .btn-edit { background: #f39c12; color: white; }
     .btn-view { background: #3498db; color: white; }
     .flag-details { margin-top: 1rem; background: #fff3cd; padding: 0.5rem; border-radius: 4px; }
   `]
 })
 export class AdminModerationComponent {
 
-  showDeleted = false;
+  showDeletedSubject = new BehaviorSubject<boolean>(false);
 
-  displayedMemes$ = this.memeService.memes$.pipe(
-    map(memes => {
-      if (this.showDeleted) {
-        return memes;
-      }
+  displayedMemes$ = combineLatest([
+    this.memeService.memes$,
+    this.showDeletedSubject
+  ]).pipe(
+    map(([memes, showDeleted]) => {
+      if (showDeleted) return memes;
       return memes.filter(m => !m.deleted);
     })
   );
@@ -77,24 +80,15 @@ export class AdminModerationComponent {
   constructor(public memeService: MemeService, private router: Router) { }
 
   toggleDeleted(event: any) {
-    this.showDeleted = event.target.checked;
-    // Trigger generic re-emit or just rely on pipe re-eval if I update a subject.
-    // But map won't re-run unless source changes.
-    // I need to filter properly.
-    // I'll update a subject to trigger combineLatest.
-    this.toggleSubject();
-  }
-
-  // Quick fix for reactivity
-  toggleSubject() {
-    // I should really use a BehaviorSubject for showDeleted.
-    // Re-implementing correctly below.
+    this.showDeletedSubject.next(event.target.checked);
   }
 
   getPreviewContent(content: string): string { return content.length > 50 ? content.substring(0, 50) + '...' : content; }
 
   softDelete(meme: Meme) {
-    this.memeService.softDeleteMeme(meme.id);
+    if (confirm('Are you sure you want to soft delete this post?')) {
+      this.memeService.softDeleteMeme(meme.id);
+    }
   }
 
   restore(meme: Meme) {
@@ -103,6 +97,10 @@ export class AdminModerationComponent {
 
   viewMeme(meme: Meme) {
     this.router.navigate(['/post', meme.id]);
+  }
+
+  editMeme(meme: Meme) {
+    this.router.navigate(['/edit', meme.id]);
   }
 
   resolveFlag(meme: Meme, index: number) {

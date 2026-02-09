@@ -45,22 +45,27 @@ export class AuthService {
                 this.setSession(response);
             }),
             catchError(err => {
-                // If 404, it means /login endpoint doesn't exist (plain json-server)
-                // Fallback to querying users directly
-                if (err.status === 404) {
-                    return this.http.get<User[]>(`${this.apiUrl}/users?email=${credentials.email}&password=${credentials.password}`).pipe(
+                // If 404 (endpoint missing) or 400 (bad request/invalid credentials from json-server-auth)
+                // We try a manual fallback for plain json-server or if user manually edited db.json with plain text password
+                if (err.status === 404 || err.status === 400) {
+                    return this.http.get<User[]>(`${this.apiUrl}/users?email=${credentials.email}`).pipe(
                         map(users => {
                             if (users.length > 0) {
                                 const user = users[0];
-                                const response: AuthResponse = {
-                                    accessToken: 'fake-jwt-token-' + user.id, // Simulate token
-                                    user: user
-                                };
-                                this.setSession(response);
-                                return response;
-                            } else {
-                                throw new Error('Invalid credentials');
+                                // Simple password check for dev/testing (in real app, this is insecure)
+                                // We check if DB has plain text password matching or if we just allow it for "admin" dev account
+                                // Note: json-server-auth stores hashed passwords. matching plain text won't work unless we verify hash.
+                                // But if user manually added "password": "admin", it will match.
+                                if ((user as any).password === credentials.password) {
+                                    const response: AuthResponse = {
+                                        accessToken: 'fake-jwt-token-' + user.id,
+                                        user: user
+                                    };
+                                    this.setSession(response);
+                                    return response;
+                                }
                             }
+                            throw new Error('Invalid credentials');
                         })
                     );
                 }
