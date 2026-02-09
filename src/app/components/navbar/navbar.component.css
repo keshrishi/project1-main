@@ -1,0 +1,64 @@
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 2rem;
+        height: 60px;
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 1rem;
+    }
+
+    .logo {
+        font-weight: bold;
+        font-size: 1.2rem;
+        cursor: pointer;
+        color: var(--primary-color);
+    }
+
+    .links {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .links a {
+        text-decoration: none;
+        color: var(--text-secondary);
+        font-weight: 500;
+        transition: color 0.2s;
+        cursor: pointer;
+    }
+
+    .links a:hover,
+    .links a.active {
+        color: var(--primary-color);
+    }
+
+    .username {
+        color: var(--text-primary);
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        background: var(--bg-primary);
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+    }
+
+    .admin-link {
+        color: #e74c3c !important;
+    }
+
+    .logout-btn {
+        color: white;
+        background: var(--danger-color);
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+
+    .logout-btn:hover {
+        opacity: 0.8;
+    }

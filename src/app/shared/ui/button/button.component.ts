@@ -8,17 +8,7 @@ export type ButtonType = 'button' | 'submit' | 'reset';
   selector: 'app-shared-button',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <button
-      [type]="type"
-      [class]="'btn btn-' + variant"
-      [class.loading]="isLoading"
-      [disabled]="disabled || isLoading"
-      (click)="onClick($event)">
-      <span *ngIf="isLoading" class="spinner"></span>
-      <ng-content></ng-content>
-    </button>
-  `,
+  templateUrl: './button.component.html',
   styleUrls: ['./button.component.css']
 })
 export class SharedButtonComponent {

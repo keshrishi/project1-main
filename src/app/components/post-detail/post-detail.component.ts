@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MemeService } from '../../services/meme.service';
 import { Meme } from '../../models/meme.model';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-post-detail',
@@ -12,8 +13,9 @@ import { ActivatedRoute, Router } from '@angular/router';
   templateUrl: './post-detail.component.html',
   styleUrls: ['./post-detail.component.css']
 })
-export class PostDetailComponent implements OnInit {
+export class PostDetailComponent implements OnInit, OnDestroy {
   meme: Meme | null = null;
+  private memeSubscription: Subscription | null = null;
 
   spoilerStates: { [key: number]: boolean } = {};
   showFlagModal = false;
@@ -29,18 +31,35 @@ export class PostDetailComponent implements OnInit {
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
+        // Initial fetch for robustness
         this.memeService.getMeme(id).subscribe({
           next: (meme) => {
             this.meme = meme;
-            this.updateSpoilerStates(); // Reset if needed
+            this.updateSpoilerStates();
           },
           error: (err) => {
             console.error('Error loading meme', err);
             this.router.navigate(['/feed']);
           }
         });
+
+        // Subscribe to global state for reactive updates (likes, etc.)
+        this.memeSubscription = this.memeService.memes$.subscribe(memes => {
+          if (this.meme) {
+            const updated = memes.find(m => m.id === this.meme?.id);
+            if (updated) {
+              this.meme = updated;
+            }
+          }
+        });
       }
     });
+  }
+
+  ngOnDestroy() {
+    if (this.memeSubscription) {
+      this.memeSubscription.unsubscribe();
+    }
   }
 
   get formattedContent(): string[] {

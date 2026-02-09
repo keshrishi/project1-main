@@ -1,0 +1,34 @@
+<div class="admin-container">
+    <h2>Moderation Dashboard</h2>
+
+    <div class="filter-controls">
+        <label><input type="checkbox" (change)="toggleDeleted($event)"> Show Deleted</label>
+    </div>
+
+    <div class="meme-list">
+        <div *ngFor="let meme of displayedMemes$ | async" class="meme-table-row" [class.deleted]="meme.deleted">
+            <div class="info">
+                <strong>{{ meme.title || 'Untitled' }}</strong>
+                <span class="preview">{{ getPreviewContent(meme.content) }}</span>
+                <div class="flags" *ngIf="meme.flags?.length">
+                    <span class="flag-count">🚩 {{ meme.flags?.length }} Flags</span>
+                </div>
+            </div>
+            <div class="actions">
+                <button *ngIf="!meme.deleted" (click)="softDelete(meme)" class="btn-danger">Soft Delete</button>
+                <button *ngIf="meme.deleted" (click)="restore(meme)" class="btn-restore">Restore</button>
+                <button (click)="editMeme(meme)" class="btn-edit">Edit</button>
+                <button (click)="viewMeme(meme)" class="btn-view">View</button>
+            </div>
+
+            <div class="flag-details" *ngIf="meme.flags?.length">
+                <ul>
+                    <li *ngFor="let flag of meme.flags; let i = index">
+                        {{ flag.reason }} ({{ flag.timestamp | date:'short' }})
+                        <button (click)="resolveFlag(meme, i)">Dismiss</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

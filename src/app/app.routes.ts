@@ -44,8 +44,8 @@ export const routes: Routes = [
         canActivate: [authGuard],
         children: [
             { path: '', redirectTo: 'saved', pathMatch: 'full' },
-            { path: 'saved', loadComponent: () => import('./features/profile/profile-posts.component').then(m => m.SavedPostsComponent) },
-            { path: 'liked', loadComponent: () => import('./features/profile/profile-posts.component').then(m => m.LikedPostsComponent) }
+            { path: 'saved', loadComponent: () => import('./features/profile/saved-posts/saved-posts.component').then(m => m.SavedPostsComponent) },
+            { path: 'liked', loadComponent: () => import('./features/profile/liked-posts/liked-posts.component').then(m => m.LikedPostsComponent) }
         ]
     },
     {

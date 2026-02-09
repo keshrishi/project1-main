@@ -1,0 +1,13 @@
+<div class="meme-list">
+    <div *ngFor="let meme of displayedMemes$ | async" class="meme-item" (click)="openMeme(meme.id)">
+        <h3>{{ meme.title || 'Untitled' }}</h3>
+        <p>{{ getPreviewContent(meme.content) }}</p>
+        <div class="meta">
+            <span>{{ meme.mood }}</span>
+            <span>{{ meme.team }}</span>
+        </div>
+    </div>
+    <div *ngIf="(displayedMemes$ | async)?.length === 0" class="empty-state">
+        No liked posts found.
+    </div>
+</div>
