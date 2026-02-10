@@ -45,15 +45,17 @@ The application follows a simple flow for users to browse, create, and interact 
     *   **Search:** A search bar filters memes by title or content.
 3.  **Interacting:**
     *   **Post Detail:** Clicking a meme opens a detailed view where users can read the full content, see spoilers (hidden text), and perform actions.
-    *   **Actions:** Users can **Like** ❤️, **Save** 🔖, or **Flag** 🚩 a post.
-    *   **Admin Actions:** Admins can **Edit** ✏️ or **Delete** 🗑️ any post.
+    *   **Actions:** Users can **Like** ❤️, **Save** 🔖, or **Flag** 🚩 a post (report it to admins).
+    *   **Admin Actions:** Admins can **Edit** ✏️, **Soft Delete** 🗑️ (hide), or **Restore** ♻️ posts.
 4.  **Creating Content:**
     *   **Composer:** Users click "Compose" to write a new meme. They can add a title, content (with spoiler tags `||spoiler||`), mood, and team.
     *   **Drafts:** If they leave without publishing, their draft is saved automatically.
 5.  **User Profile:**
     *   **My Profile:** Users can see their own details and tabs for **Saved Posts** and **Liked Posts**.
-6.  **Admin Dashboard (For Admins Only):**
-    *   **Moderation:** Admins have a special dashboard to view all posts, including deleted ones (Soft Delete), and resolve flagged content.
+    *   **Moderation (Admins Only):** Admins have a special **Moderation** tab in their profile to view flagged or deleted posts and take action.
+6.  **Admin Features:**
+    *   **Flagging System:** When a user flags a post, it appears in the Admin's Moderation tab. Admins can "Unflag" (dismiss) or Delete the post.
+    *   **Soft Delete Visibility:** Deleted posts are hidden from the public feed. Only admins can see them in the Moderation tab (highlighted in red).
 
 ---
 
@@ -73,10 +75,14 @@ In Angular, we split the application into small, reusable blocks called **Compon
     *   **Admin Actions:** logic to delete or edit.
 *   **`ComposerComponent`**: A form for creating or editing memes. It handles validation (required fields) and auto-saving drafts to LocalStorage so users don't lose work.
 *   **`LoginComponent` & `RegisterComponent`**: Forms for user authentication. They send user data to the `AuthService`.
-*   **`ProfileComponent`**: Displays user info (Avatar, Name). It has child routes for showing lists of memes.
+*   **`ProfileComponent`**: Displays user info (Avatar, Name). It has child routes for showing lists of memes:
     *   **`SavedPostsComponent`**: A list of memes the user has saved.
     *   **`LikedPostsComponent`**: A list of memes the user has liked.
-*   **`AdminModerationComponent`**: A dashboard table for admins. It allows "Soft Deleting" (hiding without removing from DB) and restoring posts.
+    *   **`AdminModerationComponent` (Admin Only)**: Reused here for seamless moderation experience.
+*   **`AdminModerationComponent`**: The dashboard for admins.
+    *   **Filters:** "Show Deleted" and "Show Flagged Only".
+    *   **Actions:** Soft Delete, Restore, and Unflag.
+    *   **Visuals:** Uses distinct colors (Red for deleted, Yellow for flagged) for easy scanning.
 
 ### **Shared**
 *   **`SharedButtonComponent`**: A reusable button used across all pages to ensure consistent styling (primary, danger, ghost variants).
@@ -89,7 +95,8 @@ In Angular, we split the application into small, reusable blocks called **Compon
 Services handle data and logic shared across components.
 *   **`MemeService`**:
     *   **Fetches Data:** It talks to the backend (or `db.json`) using `HttpClient` to get posts and users.
-    *   **State Management:** It uses `BehaviorSubject` (a stream of data) to store the list of memes. When a meme is updated (liked/deleted), the service updates this stream, and all components listening to it update automatically.
+    *   **State Management:** It uses `BehaviorSubject` (a stream of data) to store the list of memes. When a meme is updated (liked/deleted/flagged), the service updates this stream, and all components listening to it update automatically.
+    *   **Flagging Logic:** Methods like `flagMeme` and `unflagMeme` update the `flagged` status of a post and sync it to the backend.
     *   **Preferences:** Manages Saved/Liked IDs locally or on the server.
 *   **`AuthService`**:
     *   **Login:** It checks credentials. If using `json-server`, it might just check if a user with that email/password exists.
