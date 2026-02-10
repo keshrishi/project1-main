@@ -205,11 +205,20 @@ export class MemeService {
         const newFlag = { userId: this.authService.currentUserValue?.id || 'anon', reason, timestamp: Date.now() };
         const updatedFlags = [...(meme.flags || []), newFlag];
 
-        this.http.patch(`${this.apiUrl}/posts/${id}`, { flags: updatedFlags }).subscribe({
+        this.http.patch(`${this.apiUrl}/posts/${id}`, { flags: updatedFlags, flagged: true }).subscribe({
             next: () => {
-                this.updateLocalMeme(id, { flags: updatedFlags });
+                this.updateLocalMeme(id, { flags: updatedFlags, flagged: true });
             },
             error: (err) => console.error('Failed to flag meme', err)
+        });
+    }
+
+    unflagMeme(id: string) {
+        this.http.patch(`${this.apiUrl}/posts/${id}`, { flags: [], flagged: false }).subscribe({
+            next: () => {
+                this.updateLocalMeme(id, { flags: [], flagged: false });
+            },
+            error: (err) => console.error('Failed to unflag meme', err)
         });
     }
 
@@ -221,10 +230,11 @@ export class MemeService {
 
         const updatedFlags = [...(meme.flags || [])];
         updatedFlags.splice(flagIndex, 1); // Remove it
+        const isFlagged = updatedFlags.length > 0;
 
-        this.http.patch(`${this.apiUrl}/posts/${id}`, { flags: updatedFlags }).subscribe({
+        this.http.patch(`${this.apiUrl}/posts/${id}`, { flags: updatedFlags, flagged: isFlagged }).subscribe({
             next: () => {
-                this.updateLocalMeme(id, { flags: updatedFlags });
+                this.updateLocalMeme(id, { flags: updatedFlags, flagged: isFlagged });
             },
             error: (err) => console.error('Failed to resolve flag', err)
         });

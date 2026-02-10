@@ -25,3 +25,94 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+
+---
+
+# 📖 Project Documentation: MemeBazaar
+
+This document explains how the **MemeBazaar** application works, the purpose of each component, and the code logic behind it.
+
+## 1. 🔄 Project Workflow (How it works)
+
+The application follows a simple flow for users to browse, create, and interact with memes.
+
+1.  **Authentication (Entry Point):**
+    *   **Login/Register:** Users start by logging in or creating an account.
+    *   **Dashboard (Feed):** After login, they are redirected to the main Feed.
+2.  **Browsing Content:**
+    *   **The Feed:** Displays a list of memes from all users.
+    *   **Filtering:** Users can filter memes by **Mood** (e.g., Funny, Sarcastic), **Team** (e.g., Engineering, Sales), or **Sort** by Newest/Oldest.
+    *   **Search:** A search bar filters memes by title or content.
+3.  **Interacting:**
+    *   **Post Detail:** Clicking a meme opens a detailed view where users can read the full content, see spoilers (hidden text), and perform actions.
+    *   **Actions:** Users can **Like** ❤️, **Save** 🔖, or **Flag** 🚩 a post.
+    *   **Admin Actions:** Admins can **Edit** ✏️ or **Delete** 🗑️ any post.
+4.  **Creating Content:**
+    *   **Composer:** Users click "Compose" to write a new meme. They can add a title, content (with spoiler tags `||spoiler||`), mood, and team.
+    *   **Drafts:** If they leave without publishing, their draft is saved automatically.
+5.  **User Profile:**
+    *   **My Profile:** Users can see their own details and tabs for **Saved Posts** and **Liked Posts**.
+6.  **Admin Dashboard (For Admins Only):**
+    *   **Moderation:** Admins have a special dashboard to view all posts, including deleted ones (Soft Delete), and resolve flagged content.
+
+---
+
+## 2. 🧩 Component Overview (Why we use them)
+
+In Angular, we split the application into small, reusable blocks called **Components**.
+
+### **Core Components**
+*   **`AppComponent`**: The root component. It holds the main layout (Navbar + Router Outlet).
+*   **`NavbarComponent`**: The top navigation bar. It shows links (Feed, Compose, Profile) based on whether the user is logged in. It also shows the "Admin" link for admin users.
+
+### **Features**
+*   **`FeedComponent`**: The main home page. It handles fetching memes from the server and filtering them based on user input (search, mood, team). It uses `MemeService` to get data.
+*   **`PostDetailComponent`**: Displays a single meme. It handles logic for:
+    *   **Spoilers:** Hiding/showing text wrapped in `||`.
+    *   **Like/Save:** communicating with the service to update user preferences.
+    *   **Admin Actions:** logic to delete or edit.
+*   **`ComposerComponent`**: A form for creating or editing memes. It handles validation (required fields) and auto-saving drafts to LocalStorage so users don't lose work.
+*   **`LoginComponent` & `RegisterComponent`**: Forms for user authentication. They send user data to the `AuthService`.
+*   **`ProfileComponent`**: Displays user info (Avatar, Name). It has child routes for showing lists of memes.
+    *   **`SavedPostsComponent`**: A list of memes the user has saved.
+    *   **`LikedPostsComponent`**: A list of memes the user has liked.
+*   **`AdminModerationComponent`**: A dashboard table for admins. It allows "Soft Deleting" (hiding without removing from DB) and restoring posts.
+
+### **Shared**
+*   **`SharedButtonComponent`**: A reusable button used across all pages to ensure consistent styling (primary, danger, ghost variants).
+
+---
+
+## 3. 💻 Code Explanation (Simple Language)
+
+### **Services ( The "Brain" )**
+Services handle data and logic shared across components.
+*   **`MemeService`**:
+    *   **Fetches Data:** It talks to the backend (or `db.json`) using `HttpClient` to get posts and users.
+    *   **State Management:** It uses `BehaviorSubject` (a stream of data) to store the list of memes. When a meme is updated (liked/deleted), the service updates this stream, and all components listening to it update automatically.
+    *   **Preferences:** Manages Saved/Liked IDs locally or on the server.
+*   **`AuthService`**:
+    *   **Login:** It checks credentials. If using `json-server`, it might just check if a user with that email/password exists.
+    *   **Session:** It saves the logged-in user to `localStorage` so they stay logged in when refreshing the page.
+
+### **Guards ( The "Bouncers" )**
+Guards protect routes from unauthorized access.
+*   **`AuthGuard`**: If you try to go to `/feed` without logging in, it kicks you back to `/login`.
+*   **`RoleGuard`**: If you try to go to `/admin` but your role is just "user", it stops you.
+*   **`DraftGuard`**: If you try to leave the Composer with unsaved changes, it asks "Are you sure?".
+
+### **Interceptors ( The "Middleman" )**
+*   **`AuthInterceptor`**: It sits between the app and the server. Every time the app makes a request (e.g., "Get Memes"), this interceptor secretly adds the **Auth Token** to the header so the server knows who is asking.
+
+### **Key Concepts Used**
+*   **Observables (RxJS):** We use `subscribe()` to listen for data. Think of it like a YouTube subscription—whenever new data arrives (a new video), our component (you) gets notified.
+*   **Dependency Injection:** We don't create services with `new Service()`. We ask Angular to "inject" them into our components constructor.
+*   **Directives:**
+    *   `*ngIf`: "Only show this HTML if..." (e.g., only show Admin link if user is admin).
+    *   `*ngFor`: "Loop through this list and show HTML for each item" (e.g., displaying the list of memes).
+
+---
+
+### **How to Export this to PDF**
+1.  **VS Code:** Install "Markdown PDF" extension -> Right click this file -> "Export (pdf)".
+2.  **Browser:** Copy this text to a markdown viewer online (like StackEdit) -> Print to PDF.

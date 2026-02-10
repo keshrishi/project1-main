@@ -6,8 +6,6 @@
             <a routerLink="/feed" routerLinkActive="active">Feed</a>
             <a routerLink="/compose" routerLinkActive="active">Compose</a>
             <a routerLink="/me" routerLinkActive="active">Profile</a>
-            <a *ngIf="currentUser.role === 'admin'" routerLink="/admin/moderation" routerLinkActive="active"
-                class="admin-link">Admin</a>
             <span class="username">👤 {{ currentUser.username }}</span>
             <button (click)="logout()" class="logout-btn">Logout</button>
         </div>

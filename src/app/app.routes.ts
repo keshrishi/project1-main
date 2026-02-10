@@ -45,7 +45,12 @@ export const routes: Routes = [
         children: [
             { path: '', redirectTo: 'saved', pathMatch: 'full' },
             { path: 'saved', loadComponent: () => import('./features/profile/saved-posts/saved-posts.component').then(m => m.SavedPostsComponent) },
-            { path: 'liked', loadComponent: () => import('./features/profile/liked-posts/liked-posts.component').then(m => m.LikedPostsComponent) }
+            { path: 'liked', loadComponent: () => import('./features/profile/liked-posts/liked-posts.component').then(m => m.LikedPostsComponent) },
+            {
+                path: 'moderation',
+                loadComponent: () => import('./features/admin/admin-moderation.component').then(m => m.AdminModerationComponent),
+                canActivate: [roleGuard]
+            }
         ]
     },
     {

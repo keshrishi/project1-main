@@ -12,9 +12,27 @@
     }
 
     .meme-table-row.deleted {
-        opacity: 0.6;
-        background: #f0f0f0;
-        border-color: #ccc;
+        background-color: #ffe6e6 !important;
+        border: 2px solid #ffcccc;
+        color: #333 !important;
+        /* Force dark text */
+    }
+
+    .meme-table-row.deleted .preview,
+    .meme-table-row.deleted strong {
+        color: #333 !important;
+    }
+
+    .meme-table-row.flagged {
+        background-color: #fff9db !important;
+        /* Light yellow for flagged */
+        border: 2px solid #f1c40f;
+        color: #333 !important;
+    }
+
+    .meme-table-row.flagged .preview,
+    .meme-table-row.flagged strong {
+        color: #333 !important;
     }
 
     .info {

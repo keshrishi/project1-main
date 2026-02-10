@@ -26,6 +26,7 @@ export interface Meme {
   flags?: Flag[];
   comments?: Comment[];
   deleted?: boolean;
+  flagged?: boolean;
 }
 
 export interface Flag {

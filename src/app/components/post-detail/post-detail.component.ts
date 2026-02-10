@@ -34,6 +34,13 @@ export class PostDetailComponent implements OnInit, OnDestroy {
         // Initial fetch for robustness
         this.memeService.getMeme(id).subscribe({
           next: (meme) => {
+            // Check if deleted and if user is admin
+            const user = this.memeService.currentUserValue;
+            if (meme.deleted && user?.role !== 'admin') {
+              alert('This post has been deleted.');
+              this.router.navigate(['/feed']);
+              return;
+            }
             this.meme = meme;
             this.updateSpoilerStates();
           },
@@ -141,7 +148,8 @@ export class PostDetailComponent implements OnInit, OnDestroy {
   }
 
   submitFlag() {
-    if (!this.flagReason.trim()) return;
+    if (!this.flagReason.trim() || !this.meme) return;
+    this.memeService.flagMeme(this.meme.id, this.flagReason);
     alert('Post flagged for review.');
     this.closeFlagModal();
   }

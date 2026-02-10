@@ -9,6 +9,8 @@
     <div class="profile-tabs">
         <a routerLink="saved" routerLinkActive="active">Saved</a>
         <a routerLink="liked" routerLinkActive="active">Liked</a>
+        <a *ngIf="user.role === 'admin'" routerLink="moderation" routerLinkActive="active"
+            class="admin-tab">Moderation</a>
     </div>
 
     <router-outlet></router-outlet>

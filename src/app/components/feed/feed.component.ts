@@ -43,7 +43,8 @@ export class FeedComponent implements OnInit {
     this.memeService.preferences$
   ]).pipe(
     map(([memes, term, mood, team, saved, liked, sort, prefs]) => {
-      let filtered = memes;
+      // Filter out deleted posts immediately
+      let filtered = memes.filter(m => !m.deleted);
 
       // Filter by Team
       if (team) {

@@ -15,14 +15,25 @@ import { Router } from '@angular/router';
 export class AdminModerationComponent {
 
   showDeletedSubject = new BehaviorSubject<boolean>(false);
+  showFlaggedSubject = new BehaviorSubject<boolean>(false);
 
   displayedMemes$ = combineLatest([
     this.memeService.memes$,
-    this.showDeletedSubject
+    this.showDeletedSubject,
+    this.showFlaggedSubject
   ]).pipe(
-    map(([memes, showDeleted]) => {
-      if (showDeleted) return memes;
-      return memes.filter(m => !m.deleted);
+    map(([memes, showDeleted, showFlagged]) => {
+      let result = memes;
+
+      if (showFlagged) {
+        result = result.filter(m => m.flagged || (m.flags && m.flags.length > 0));
+      }
+
+      if (!showDeleted) {
+        result = result.filter(m => !m.deleted);
+      }
+
+      return result;
     })
   );
 
@@ -30,6 +41,10 @@ export class AdminModerationComponent {
 
   toggleDeleted(event: any) {
     this.showDeletedSubject.next(event.target.checked);
+  }
+
+  toggleFlagged(event: any) {
+    this.showFlaggedSubject.next(event.target.checked);
   }
 
   getPreviewContent(content: string): string { return content.length > 50 ? content.substring(0, 50) + '...' : content; }
@@ -54,5 +69,11 @@ export class AdminModerationComponent {
 
   resolveFlag(meme: Meme, index: number) {
     this.memeService.resolveFlag(meme.id, index);
+  }
+
+  unflagMeme(meme: Meme) {
+    if (confirm('Clear all flags and unflag this post?')) {
+      this.memeService.unflagMeme(meme.id);
+    }
   }
 }

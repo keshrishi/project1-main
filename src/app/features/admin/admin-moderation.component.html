@@ -3,10 +3,13 @@
 
     <div class="filter-controls">
         <label><input type="checkbox" (change)="toggleDeleted($event)"> Show Deleted</label>
+        <label style="margin-left: 1rem;"><input type="checkbox" (change)="toggleFlagged($event)"> Show Flagged
+            Only</label>
     </div>
 
     <div class="meme-list">
-        <div *ngFor="let meme of displayedMemes$ | async" class="meme-table-row" [class.deleted]="meme.deleted">
+        <div *ngFor="let meme of displayedMemes$ | async" class="meme-table-row" [class.deleted]="meme.deleted"
+            [class.flagged]="!meme.deleted && (meme.flagged || meme.flags?.length)">
             <div class="info">
                 <strong>{{ meme.title || 'Untitled' }}</strong>
                 <span class="preview">{{ getPreviewContent(meme.content) }}</span>
@@ -19,6 +22,8 @@
                 <button *ngIf="meme.deleted" (click)="restore(meme)" class="btn-restore">Restore</button>
                 <button (click)="editMeme(meme)" class="btn-edit">Edit</button>
                 <button (click)="viewMeme(meme)" class="btn-view">View</button>
+                <button *ngIf="meme.flags?.length" (click)="unflagMeme(meme)" class="btn-warning"
+                    style="background: #f1c40f; color: black;">Unflag</button>
             </div>
 
             <div class="flag-details" *ngIf="meme.flags?.length">
