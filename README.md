@@ -111,6 +111,60 @@ Guards protect routes from unauthorized access.
 ### **Interceptors ( The "Middleman" )**
 *   **`AuthInterceptor`**: It sits between the app and the server. Every time the app makes a request (e.g., "Get Memes"), this interceptor secretly adds the **Auth Token** to the header so the server knows who is asking.
 
+---
+
+## 4. 📂 Project Structure (Where things are)
+
+Here is a map of the folders to help you navigate:
+
+```text
+src/app/
+├── components/          # Reusable UI blocks
+│   ├── navbar/          # Top navigation
+│   ├── feed/            # Main homepage feed
+│   ├── post-detail/     # Single post view
+│   └── composer/        # Create/Edit form
+├── features/            # larger page-level modules
+│   ├── auth/            # Login & Register pages
+│   ├── admin/           # Moderation Dashboard
+│   └── profile/         # User Profile & Tabs (Saved/Liked)
+├── services/            # Logic & Data handling (MemeService, AuthService)
+├── models/              # TypeScript Interfaces (Data shapes)
+├── core/                # Global utilities
+│   ├── guards/          # Route protection (AuthGuard, RoleGuard)
+│   └── interceptors/    # HTTP Request modification
+└── shared/              # Generic UI components (Buttons, etc.)
+```
+
+---
+
+## 5. 🧠 Deep Dive: How Data Moves
+
+This project uses **Reactive Programming (RxJS)**. Here is the journey of a "Like":
+
+1.  **User Clicks Like:**
+    *   The `PostDetailComponent` calls `memeService.toggleLike(id)`.
+2.  **Service Action (Optimistic Update):**
+    *   **Step A (Instant):** The specific meme in the local list (`memesSubject`) is updated *immediately*. The heart turns red instantly.
+    *   **Step B (Background):** The service sends an HTTP PATCH request to the server (`db.json`) to save the change permanently.
+3.  **Component Update:**
+    *   Because the component is `subscribe()`-ing to `memes$`, it sees the update from Step A instantly.
+    *   If Step B (Server) fails, the service undoes the change, and the heart turns back (error handling).
+
+---
+
+## 6. 🔐 Security & Permissions
+
+We use **Guards** to act as security checkpoints for URLs.
+
+| Guard | Role | Example |
+| :--- | :--- | :--- |
+| **AuthGuard** | Ensures user is logged in. | Protects `/feed`, `/profile`. Redirects to `/login`. |
+| **RoleGuard** | Ensures user is an **Admin**. | Protects `/admin`. Redirects non-admins to `/feed`. |
+| **DraftGuard** | Prevents data loss. | Checks if Composer form is dirty. Asks "Discard changes?" if leaving. |
+
+---
+
 ### **Key Concepts Used**
 *   **Observables (RxJS):** We use `subscribe()` to listen for data. Think of it like a YouTube subscription—whenever new data arrives (a new video), our component (you) gets notified.
 *   **Dependency Injection:** We don't create services with `new Service()`. We ask Angular to "inject" them into our components constructor.
